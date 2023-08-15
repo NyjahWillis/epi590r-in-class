@@ -3,11 +3,13 @@ title: "gtsummary in quarto"
 format: 
   html:
     theme: morph
+cache: true
 ---
 
 ```{r}
 #| echo: false
 #| message: false
+# to do both above at once do " #| include: false"
 library(tidyverse)
 library(gtsummary)
 nlsy_cols <- c("glasses", "eyesight", "sleep_wkdy", "sleep_wknd", 
@@ -26,12 +28,31 @@ nlsy <- read_csv(here::here("data", "raw", "nlsy.csv"),
 # Customization of `tbl_summary()`
 
 ```{r}
-tbl_summary(
+#| label: tbl-pop_char
+#| tbl-cap: "This is a table of participant charatieristics based on sex"
+table1<- tbl_summary(
   nlsy,
   by = sex_cat,
   include = c(sex_cat, race_eth_cat, region_cat,
-              eyesight_cat, glasses, age_bir))
+              eyesight_cat, glasses, age_bir)) |>
+add_overall (last = TRUE)
+table1
 ```
+
+#Cross referencing example
+@tbl-pop_char contains a table
+
+#inline tex example
+```{r}
+#What is the percentage of Black males 
+raceB <- inline_text(table1,variable = "race_eth_cat", level= "Black", column = "Male")
+#What is the percentage of hispanic males
+raceH <-inline_text(table1,variable = "race_eth_cat", level= "Hispanic", column = "Male")
+per <- inline_text(table1,variable = "race_eth_cat", level= "Black", column = "stat_0",
+									pattern = "{n}/{N} ({p}%)")
+```
+ 
+ There are (`r raceB`) Black men and (`r raceH`) Hispanic men in the population. The overall amount of Black participants is (`r per`)
 
 ```{r}
 tbl_summary(
@@ -48,6 +69,7 @@ tbl_summary(
   ),
   missing_text = "Missing")
 ```
+
 
 ```{r}
 tbl_summary(
